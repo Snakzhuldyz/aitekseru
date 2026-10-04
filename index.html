@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f6b5c">
+<meta name="description" content="ЖИ жауабын «3 адым» ережесімен тексеретін оқушыларға арналған қосымша">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ЖИ Тексеруші">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html,body{height:100%}body{margin:0;font-family:system-ui,-apple-system,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>ЖИ Тексеруші</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap&subset=cyrillic-ext">
+<style>
+/* Layout: a fact-checker's desk — sticky tab bar, one working column, verdicts shown as ink stamps */
+:root{
+  --bg:#f3f6f5; --paper:#ffffff; --ink:#14302c; --muted:#5b716d; --line:#d6e1de;
+  --accent:#0f6b5c; --accent-soft:#dcefea;
+  --ok:#1f8a4c; --ok-soft:#e1f4e8; --bad:#c2372f; --bad-soft:#fbe5e3; --warn:#b7791f; --warn-soft:#fbf0dc;
+  --f-display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1716; --paper:#15211f; --ink:#e3eeeb; --muted:#93a8a3; --line:#2a3a37;
+  --accent:#4fc2ab; --accent-soft:#17332e;
+  --ok:#5ccf8a; --ok-soft:#14301f; --bad:#f07a71; --bad-soft:#3a1a18; --warn:#e5b35a; --warn-soft:#33270f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1716; --paper:#15211f; --ink:#e3eeeb; --muted:#93a8a3; --line:#2a3a37;
+  --accent:#4fc2ab; --accent-soft:#17332e;
+  --ok:#5ccf8a; --ok-soft:#14301f; --bad:#f07a71; --bad-soft:#3a1a18; --warn:#e5b35a; --warn-soft:#33270f; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:860px;margin:0 auto}
+header.top{padding-block:28px 12px}
+.eyebrow{font:500 12px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font:700 clamp(24px,5vw,34px)/1.15 var(--f-display);margin:6px 0 8px;text-wrap:balance}
+h2{font:700 20px/1.25 var(--f-display);margin:0 0 6px;text-wrap:balance}
+h3{font:600 16px/1.3 var(--f-body);margin:0}
+p{margin:0}
+.lead{color:var(--muted);max-width:62ch}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:6px;padding-block:10px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:22px}
+nav.tabs button{flex:0 0 auto;font:600 14px var(--f-body);border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:9px 14px;border-radius:999px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+section.panel{display:grid;gap:18px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:12px;min-width:0}
+label.f{display:grid;gap:6px;font-weight:600;font-size:14px}
+textarea,input[type=text],select{width:100%;font:16px/1.45 var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{resize:vertical;min-height:72px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{font:600 15px var(--f-body);border:0;border-radius:10px;padding:11px 18px;cursor:pointer;background:var(--accent);color:var(--paper)}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn.small{padding:7px 12px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.hint{font-size:13px;color:var(--muted)}
+/* flags */
+.flags{display:grid;gap:8px}
+.flag{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;padding:10px 12px;border-radius:10px;font-size:14px}
+.flag b{display:block}
+.flag .ic{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 14px var(--f-mono)}
+.flag.warn{background:var(--warn-soft)} .flag.warn .ic{background:var(--warn);color:var(--paper)}
+.flag.bad{background:var(--bad-soft)} .flag.bad .ic{background:var(--bad);color:var(--paper)}
+.flag.ok{background:var(--ok-soft)} .flag.ok .ic{background:var(--ok);color:var(--paper)}
+/* steps */
+.steps{display:grid;gap:12px}
+.step{border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:10px;background:var(--bg)}
+.step-h{display:flex;gap:12px;align-items:flex-start}
+.num{flex:0 0 34px;height:34px;border-radius:50%;background:var(--accent);color:var(--paper);display:grid;place-items:center;font:700 15px var(--f-display)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:600 13px var(--f-body);padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"][data-v="match"]{background:var(--ok);border-color:var(--ok);color:var(--paper)}
+.seg button[aria-pressed="true"][data-v="nomatch"]{background:var(--bad);border-color:var(--bad);color:var(--paper)}
+.seg button[aria-pressed="true"][data-v="skip"]{background:var(--muted);border-color:var(--muted);color:var(--paper)}
+/* verdict stamp */
+.verdict{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+.stamp{font:700 20px var(--f-display);letter-spacing:.06em;padding:10px 16px;border:3px solid currentColor;border-radius:8px;transform:rotate(-6deg);text-transform:uppercase;white-space:nowrap}
+.stamp.ok{color:var(--ok)} .stamp.bad{color:var(--bad)} .stamp.warn{color:var(--warn)}
+@media (prefers-reduced-motion:no-preference){.stamp.pop{animation:pop .35s ease-out}@keyframes pop{from{transform:rotate(-6deg) scale(1.5);opacity:.2}to{transform:rotate(-6deg) scale(1);opacity:1}}}
+.meter{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);transition:width .3s}
+/* journal */
+.stats{display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:center}
+.legend{display:grid;gap:8px}
+.lg{display:flex;justify-content:space-between;gap:12px;padding:8px 12px;border-radius:10px;font-weight:600}
+.lg.ok{background:var(--ok-soft);color:var(--ok)} .lg.bad{background:var(--bad-soft);color:var(--bad)} .lg.warn{background:var(--warn-soft);color:var(--warn)}
+.num-t{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.warn{background:var(--warn-soft);color:var(--warn)}
+.tag{font:500 11px var(--f-mono);color:var(--muted);border:1px dashed var(--line);padding:1px 6px;border-radius:6px;margin-left:4px}
+.x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+/* rules */
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.three .step{background:var(--paper)}
+.rules{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;list-style:none;padding:0;margin:0;counter-reset:r}
+.rules li{counter-increment:r;display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:center;padding:10px 12px;background:var(--bg);border-radius:10px;font-weight:500}
+.rules li::before{content:counter(r);width:30px;height:30px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font:700 14px var(--f-display)}
+.motto{background:var(--accent);color:var(--paper);border-radius:14px;padding:20px;font:700 clamp(17px,3.4vw,22px)/1.35 var(--f-display);text-wrap:balance}
+.why{display:grid;gap:6px;padding-left:18px;margin:0}
+/* quiz */
+.qa{display:grid;gap:4px;padding:14px;border-radius:12px;background:var(--bg)}
+.qa .k{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.qa .ans{font-size:18px;font-weight:600}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice .btn{padding:14px}
+.choice .yes{background:var(--ok)} .choice .no{background:var(--bad)}
+.explain{padding:12px 14px;border-radius:10px;font-size:15px}
+.explain.ok{background:var(--ok-soft)} .explain.bad{background:var(--bad-soft)}
+.progress{font:500 13px var(--f-mono);color:var(--muted)}
+@media (max-width:640px){
+  .three,.rules{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr;justify-items:center}
+  .legend{width:100%}
+  .verdict{grid-template-columns:1fr;justify-items:start}
+}
+/* ---- robot: welcome screen + assistant ---- */
+.robot svg{display:block;width:100%;height:auto;overflow:visible}
+.robot .arm-wave{transform-box:view-box;transform-origin:146px 168px}
+.robot .eye{transform-box:fill-box;transform-origin:center}
+@media (prefers-reduced-motion:no-preference){
+  .robot .arm-wave{animation:wave 1.6s ease-in-out infinite}
+  .robot .eye{animation:blink 4.5s infinite}
+  .robot .float{animation:float 3.2s ease-in-out infinite}
+  @keyframes wave{0%,100%{transform:rotate(0)}25%{transform:rotate(-28deg)}50%{transform:rotate(6deg)}75%{transform:rotate(-22deg)}}
+  @keyframes blink{0%,46%,50%,100%{transform:scaleY(1)}48%{transform:scaleY(.1)}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .bubble.pop{animation:bpop .3s ease-out}
+  @keyframes bpop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+}
+#welcome{min-height:100%;display:grid;place-items:center;padding-block:32px}
+.welcome-in{display:grid;justify-items:center;gap:18px;text-align:center;max-width:560px}
+.welcome-in .robot{width:min(260px,62vw)}
+.hello{position:relative;background:var(--paper);border:2px solid var(--accent);border-radius:22px;padding:14px 26px;font:700 clamp(26px,7vw,40px)/1.15 var(--f-display);color:var(--accent)}
+.hello::after{content:"";position:absolute;left:50%;bottom:-12px;width:20px;height:20px;background:var(--paper);border-right:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:translateX(-50%) rotate(45deg)}
+.welcome-in .lead{font-size:18px;color:var(--ink)}
+.btn.big{font-size:18px;padding:15px 28px;border-radius:14px}
+#assistant{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;align-items:flex-end;gap:6px;pointer-events:none}
+#assistant .robot{width:88px;cursor:pointer;pointer-events:auto;background:none;border:0;padding:0}
+.bubble{pointer-events:auto;max-width:230px;background:var(--paper);color:var(--ink);border:1.5px solid var(--accent);border-radius:16px 16px 4px 16px;padding:10px 12px;font-size:14px;line-height:1.4;box-shadow:0 6px 18px rgba(20,48,44,.15);margin-bottom:46px}
+body.has-assistant{padding-bottom:140px}
+@media (max-width:640px){#assistant .robot{width:66px}.bubble{max-width:190px;font-size:13px;margin-bottom:34px}}
+</style>
+
+<section id="welcome">
+  <div class="welcome-in">
+    <div class="hello">Сәлем, досым!</div>
+    <div class="robot" id="bigRobot" aria-hidden="true"></div>
+    <p class="lead">Мен — тақия киген ЖИ Тексеруші роботпын. Жасанды интеллект берген жауаптың дұрыс-бұрысын бірге тексерейік!</p>
+    <button class="btn big" id="startBtn">ЖИ сұрақ-жауабын тексеру</button>
+  </div>
+</section>
+
+<div id="assistant" hidden>
+  <div class="bubble" id="bubble" aria-live="polite">Сәлем! Мен сенің көмекшіңмін.</div>
+  <button class="robot" id="smallRobot" aria-label="Көмекші робот: кеңесті жасыру немесе көрсету"></button>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <header class="top">
+    <div class="eyebrow">Ғылыми жоба · Цифрлық сауаттылық</div>
+    <h1>Жасанды интеллект беретін ақпаратқа сенуге бола ма?</h1>
+    <p class="lead">ЖИ жауабын «3 адым» ережесімен тексеріп, нәтижені журналға жазатын бағдарлама.</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="check" aria-selected="true">Жауапты тексеру</button>
+    <button role="tab" data-tab="journal" aria-selected="false">Журнал және нәтиже</button>
+    <button role="tab" data-tab="rules" aria-selected="false">Ережелер</button>
+    <button role="tab" data-tab="quiz" aria-selected="false">Жаттығу</button>
+  </nav>
+
+  <!-- CHECK -->
+  <section class="panel" id="p-check">
+    <div class="card">
+      <h2>1. ЖИ-ге қойылған сұрақ пен жауап</h2>
+      <label class="f" for="q">ЖИ-ге берілген сұрақ
+        <textarea id="q" rows="2">Абай Құнанбайұлы қай жылы туған?</textarea></label>
+      <label class="f" for="a">ЖИ жауабы
+        <textarea id="a" rows="3">Абай Құнанбайұлы 1845 жылы туған. Ол қазақтың ұлы ақыны әрі ағартушысы.</textarea></label>
+      <div class="row">
+        <button class="btn" id="analyze">Жауапты талдау</button>
+        <button class="btn ghost" id="clear">Тазалау</button>
+      </div>
+      <p class="hint">Мысал толтырылған. Өз сұрағыңыз бен ЖИ жауабын қойып, «Жауапты талдау» батырмасын басыңыз.</p>
+    </div>
+
+    <div class="card" id="flagsCard" hidden>
+      <h2>2. Алғашқы талдау: назар аударатын белгілер</h2>
+      <p class="hint">Бағдарлама мәтінді қарап, қай жерін міндетті түрде тексеру керегін көрсетеді. Бұл шешім емес, тек ескерту.</p>
+      <div class="flags" id="flags"></div>
+    </div>
+
+    <div class="card" id="autoCard" hidden>
+      <h2>Жылдам тексеру</h2>
+      <p class="hint">Бағдарлама жауапты өзі тексеріп, дұрыс па, қате ме екенін және дұрыс жауапты көрсетеді. Есіңізде болсын: бұл да ЖИ пікірі, сондықтан төмендегі 3 адыммен растап алған дұрыс.</p>
+      <div class="row"><button class="btn" id="autoBtn">Жауапты автоматты тексеру</button><span class="hint" id="autoStatus" aria-live="polite"></span></div>
+      <div id="autoOut" hidden style="display:grid;gap:10px"></div>
+    </div>
+
+    <div class="card" id="stepsCard" hidden>
+      <h2>3. «3 адым» ережесі бойынша тексеру</h2>
+      <p class="hint">Әр адымда жауапты дереккөзбен салыстырып, нәтижесін белгілеңіз.</p>
+      <div class="steps" id="steps"></div>
+    </div>
+
+    <div class="card" id="verdictCard" hidden>
+      <h2>4. Қорытынды</h2>
+      <div class="verdict">
+        <div class="stamp warn" id="stamp">Тексер</div>
+        <div style="display:grid;gap:8px;min-width:0">
+          <p id="verdictText"></p>
+          <div class="meter"><i id="meter" style="width:0"></i></div>
+          <p class="hint" id="meterText"></p>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn" id="save">Журналға сақтау</button>
+        <span class="hint" id="savedMsg" aria-live="polite"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- JOURNAL -->
+  <section class="panel" id="p-journal" hidden>
+    <div class="card">
+      <h2>Тәжірибе нәтижесі</h2>
+      <div class="stats">
+        <svg id="donut" viewBox="0 0 120 120" width="150" height="150" role="img" aria-label="Нәтиже диаграммасы"></svg>
+        <div class="legend">
+          <div class="lg ok"><span>Дұрыс жауаптар</span><span class="num-t" id="sOk">0</span></div>
+          <div class="lg bad"><span>Қате немесе толық емес</span><span class="num-t" id="sBad">0</span></div>
+          <div class="lg warn"><span>Әлі тексерілуде</span><span class="num-t" id="sWarn">0</span></div>
+          <p class="hint" id="sTotal"></p>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2>Тексеру журналы</h2>
+        <div class="row">
+          <button class="btn ghost small" id="copyCsv">Кестені көшіру</button>
+          <button class="btn ghost small" id="clearAll">Барлығын өшіру</button>
+        </div>
+      </div>
+      <div class="row" id="confirmBox" hidden>
+        <span>Журналдағы барлық жазба өшеді. Сенімдісіз бе?</span>
+        <button class="btn small" id="yesClear" style="background:var(--bad)">Иә, өшіру</button>
+        <button class="btn ghost small" id="noClear">Жоқ</button>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th>№</th><th>ЖИ-ге берілген сұрақ</th><th>ЖИ жауабы</th><th>Тексеру әдісі</th><th>Нәтиже</th><th></th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table></div>
+      <p class="hint">«Мысал» белгісі бар жолдар жобадағы тәжірибеден алынған. Журнал осы құрылғыдағы браузерде сақталады. Нәтижені өзгерту үшін оның белгісін басыңыз (Тексерілуде → Дұрыс → Қате жіберді). «Кестені көшіру» Excel-ге немесе Word-қа қоюға арналған.</p>
+    </div>
+  </section>
+
+  <!-- RULES -->
+  <section class="panel" id="p-rules" hidden>
+    <div class="motto">ЖИ айтты — бірден сенбе, алдымен 3 адым арқылы тексер!</div>
+    <div class="card">
+      <h2>ЖИ ақпаратын тексерудің «3 адым» ережесі</h2>
+      <div class="three">
+        <div class="step"><div class="step-h"><span class="num">1</span><div><h3>Оқулықпен салыстыру</h3><p class="hint">ЖИ жауабын мектеп оқулықтарымен, энциклопедиялармен немесе ресми сөздіктермен салыстыр.</p></div></div></div>
+        <div class="step"><div class="step-h"><span class="num">2</span><div><h3>Мұғалімнен сұрау</h3><p class="hint">Күмәнді фактіні мұғалімге немесе ата-анаға көрсетіп, «Бұл шын мәнінде солай ма?» деп нақтыла.</p></div></div></div>
+        <div class="step"><div class="step-h"><span class="num">3</span><div><h3>Ресми сайттан іздеу</h3><p class="hint">Сол сұрақты ғылыми сайттардан немесе сенімді дереккөздерден қайта іздеп, сәйкестігін тексер.</p></div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>ЖИ-ді дұрыс қолдану ережелері</h2>
+      <ol class="rules">
+        <li>Ақпараттың дереккөзін тексер.</li>
+        <li>Оқулық және кітаппен салыстыр.</li>
+        <li>Сенімді ақпаратқа сақ бол.</li>
+        <li>ЖИ-ді көмекші құрал ретінде ғана қолдан.</li>
+        <li>Жеке деректеріңді қорға.</li>
+        <li>Сұрақ қой, ойлан, тексер!</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h2>ЖИ неге бұрыс болуы мүмкін?</h2>
+      <ul class="why">
+        <li>Интернеттегі көп ақпаратты жинайды, оның ішінде қатесі де бар.</li>
+        <li>Оқытылған адам емес, ойлап, ұғынбайды.</li>
+        <li>Көп түрлі тақырыпта жауап береді, бірақ бәрін дәл білмейді.</li>
+        <li>Жылдам әрі қолжетімді көмекші, бірақ 100% қатесіз «сиқыршы» емес.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Қорытынды және ұсыныстар</h2>
+      <ul class="why">
+        <li><b>ЖИ — көмекші құрал.</b> Ол тек цифрлық ассистент.</li>
+        <li><b>Тексерусіз қолданбау.</b> ЖИ берген ақпаратты тексермей сабаққа немесе жобаға пайдалануға болмайды.</li>
+        <li><b>Цифрлық сауаттылық.</b> Ақпаратты тексеру (фактчекинг) дағдысын мектеп жасынан қалыптастыру қажет.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="panel" id="p-quiz" hidden>
+    <div class="card" id="quizCard">
+      <div class="row" style="justify-content:space-between">
+        <h2>ЖИ дұрыс айтты ма?</h2>
+        <span class="progress" id="qProg"></span>
+      </div>
+      <p class="hint">ЖИ жауабын оқып, дұрыс па, қате ме, соны таңдаңыз. Әр жауаптан кейін қалай тексеруге болатыны көрсетіледі.</p>
+      <div class="qa"><span class="k">Сұрақ</span><span id="qQ"></span></div>
+      <div class="qa"><span class="k">ЖИ жауабы</span><span class="ans" id="qA"></span></div>
+      <div class="choice" id="qChoice">
+        <button class="btn yes" data-ans="1">Дұрыс</button>
+        <button class="btn no" data-ans="0">Қате</button>
+      </div>
+      <div class="explain" id="qExp" hidden></div>
+      <div class="row"><button class="btn" id="qNext" hidden>Келесі сұрақ</button></div>
+    </div>
+    <div class="card" id="quizEnd" hidden>
+      <h2>Жаттығу аяқталды</h2>
+      <p id="qScore" style="font:700 28px var(--f-display)"></p>
+      <p id="qMsg"></p>
+      <div class="row"><button class="btn" id="qRestart">Қайта бастау</button></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+
+/* ---------- robot ---------- */
+const ROBOT=`<svg viewBox="0 0 200 250" xmlns="http://www.w3.org/2000/svg">
+ <ellipse cx="100" cy="242" rx="52" ry="7" fill="#14302c" opacity=".15"/>
+ <g class="float">
+  <g class="arm-wave"><rect x="142" y="120" width="16" height="50" rx="8" fill="#cfe9e3" stroke="#14302c" stroke-width="3" transform="rotate(30 150 168)"/><circle cx="174" cy="126" r="11" fill="#f2b632" stroke="#14302c" stroke-width="3"/></g>
+  <rect x="38" y="160" width="16" height="46" rx="8" fill="#cfe9e3" stroke="#14302c" stroke-width="3" transform="rotate(12 46 160)"/>
+  <circle cx="38" cy="208" r="10" fill="#f2b632" stroke="#14302c" stroke-width="3"/>
+  <rect x="58" y="150" width="84" height="76" rx="24" fill="#e9f6f3" stroke="#14302c" stroke-width="3"/>
+  <rect x="74" y="166" width="52" height="36" rx="10" fill="#14302c"/>
+  <path d="M88 184 l8 8 l16 -16" fill="none" stroke="#5ccf8a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="84" cy="214" r="4" fill="#c0392b"/><circle cx="100" cy="214" r="4" fill="#f2b632"/><circle cx="116" cy="214" r="4" fill="#0f6b5c"/>
+  <rect x="88" y="138" width="24" height="16" rx="5" fill="#cfe9e3" stroke="#14302c" stroke-width="3"/>
+  <circle cx="34" cy="104" r="11" fill="#f2b632" stroke="#14302c" stroke-width="3"/>
+  <circle cx="166" cy="104" r="11" fill="#f2b632" stroke="#14302c" stroke-width="3"/>
+  <rect x="38" y="62" width="124" height="86" rx="34" fill="#e9f6f3" stroke="#14302c" stroke-width="3"/>
+  <rect x="54" y="80" width="92" height="56" rx="24" fill="#14302c"/>
+  <ellipse class="eye" cx="80" cy="103" rx="9" ry="11" fill="#7ff0d8"/>
+  <ellipse class="eye" cx="120" cy="103" rx="9" ry="11" fill="#7ff0d8"/>
+  <circle cx="83" cy="99" r="3" fill="#fff"/><circle cx="123" cy="99" r="3" fill="#fff"/>
+  <path d="M86 120 q14 11 28 0" fill="none" stroke="#7ff0d8" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="64" cy="122" r="6" fill="#ff8fa3" opacity=".8"/><circle cx="136" cy="122" r="6" fill="#ff8fa3" opacity=".8"/>
+  <!-- тақия -->
+  <path d="M44 74 Q44 18 100 16 Q156 18 156 74 Z" fill="#b8222c" stroke="#14302c" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M42 66 Q100 58 158 66 L158 78 Q100 70 42 78 Z" fill="#f2b632" stroke="#14302c" stroke-width="3" stroke-linejoin="round"/>
+  <g fill="none" stroke="#b8222c" stroke-width="2.4" stroke-linecap="round">
+   <path d="M62 71 c-4 -4 2 -8 5 -4 M72 71 c4 -4 -2 -8 -5 -4"/>
+   <path d="M93 69 c-4 -4 2 -8 5 -4 M107 69 c4 -4 -2 -8 -5 -4"/>
+   <path d="M128 71 c-4 -4 2 -8 5 -4 M138 71 c4 -4 -2 -8 -5 -4"/>
+  </g>
+  <g fill="none" stroke="#f2b632" stroke-width="3" stroke-linecap="round">
+   <path d="M100 26 v26"/>
+   <path d="M100 40 c-10 -2 -16 -10 -10 -16 c5 -4 10 2 6 6"/>
+   <path d="M100 40 c10 -2 16 -10 10 -16 c-5 -4 -10 2 -6 6"/>
+   <path d="M66 54 c4 -10 10 -16 18 -20 M134 54 c-4 -10 -10 -16 -18 -20"/>
+  </g>
+  <circle cx="100" cy="18" r="6" fill="#f2b632" stroke="#14302c" stroke-width="3"/>
+ </g>
+</svg>`;
+$('#bigRobot').innerHTML=ROBOT; $('#smallRobot').innerHTML=ROBOT;
+const TIPS={
+  check:'Сұрақ пен ЖИ жауабын жаз да, «Жауапты талдау» батырмасын бас!',
+  journal:'Мұнда сен тексерген барлық жауап сақталады. Нәтиже белгісін басып, өзгертуге болады.',
+  rules:'Есіңде болсын: ЖИ айтты — бірден сенбе, 3 адыммен тексер!',
+  quiz:'ЖИ дұрыс айтты ма? Ойлан да, таңда!'
+};
+let bubbleOn=true;
+function say(t){const b=$('#bubble');b.textContent=t;bubbleOn=true;b.hidden=false;b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');}
+$('#smallRobot').onclick=()=>{bubbleOn=!bubbleOn;$('#bubble').hidden=!bubbleOn;};
+$('#startBtn').onclick=()=>{
+  $('#welcome').hidden=true;$('#app').hidden=false;$('#assistant').hidden=false;
+  document.body.classList.add('has-assistant');window.scrollTo(0,0);say(TIPS.check);
+};
+
+/* ---------- tabs ---------- */
+const tabs=[...document.querySelectorAll('nav.tabs button')];
+function show(t){
+  tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+  ['check','journal','rules','quiz'].forEach(id=>$('#p-'+id).hidden=id!==t);
+  if(t==='journal')renderJournal();
+  if(typeof say==='function'&&!$('#app').hidden)say(TIPS[t]);
+}
+tabs.forEach(b=>b.onclick=()=>show(b.dataset.tab));
+const h=(location.hash||'').slice(1); if(['check','journal','rules','quiz'].includes(h)){$('#startBtn').click();show(h);}
+
+/* ---------- red-flag analysis ---------- */
+function analyze(q,a){
+  const t=a.toLowerCase(), out=[];
+  if(a.trim().length<3){out.push(['bad','!','Жауап бос немесе тым қысқа','ЖИ жауабын толық көшіріп қойыңыз.']);return out;}
+  const years=a.match(/\b(1[0-9]{3}|20[0-9]{2})\b/g);
+  const nums=a.match(/\d+([.,]\d+)?/g);
+  if(years) out.push(['warn','?','Дата бар: '+[...new Set(years)].join(', '),'ЖИ даталарды жиі шатастырады. Тарих немесе әдебиет оқулығымен салыстырыңыз.']);
+  else if(nums) out.push(['warn','?','Сандар бар: '+[...new Set(nums)].slice(0,5).join(', '),'Сандық деректерді оқулықтан немесе ресми сайттан тексеріңіз.']);
+  const abs=['әрқашан','ешқашан','барлығы','бәрі де','ешкім','міндетті түрде','сөзсіз','100%','100 %','кепілдік','ең ','всегда','никогда'];
+  const foundAbs=abs.filter(w=>t.includes(w)).map(w=>w.trim());
+  if(foundAbs.length) out.push(['warn','?','Кесімді сөздер: '+foundAbs.join(', '),'«Ең», «әрқашан», «ешқашан» сияқты сөздер бар тұжырымдар жиі асыра айтылады. Дәлелін іздеңіз.']);
+  const names=a.match(/[А-ЯӘҒҚҢӨҰҮҺІЁA-Z][а-яәғқңөұүһіёa-z]+(ұлы|улы|қызы|кызы|ов|ова|ев|ева|ин|ина)\b/g);
+  if(names) out.push(['warn','?','Есімдер бар: '+[...new Set(names)].join(', '),'ЖИ есімдер мен оқиғаларды шатастыруы мүмкін. Энциклопедиядан қараңыз.']);
+  const src=/(http|www\.|\.kz|\.gov|дереккөз|источник|оқулық|энциклопедия|сөздік|сайт)/i.test(a);
+  if(!src) out.push(['warn','?','Дереккөз көрсетілмеген','Жауапта ақпарат қайдан алынғаны жазылмаған. 1-ереже: дереккөзді өзіңіз тексеріңіз.']);
+  const priv=/(жсн|иин|құпиясөз|пароль|парол|карта нөмір|телефон нөмір|мекенжай|адрес|pin|cvv)/i.test(q+' '+a);
+  if(priv) out.push(['bad','!','Жеке деректер туралы сөз бар','5-ереже: ЖИ-ге ЖСН, құпиясөз, карта нөмірі, үй мекенжайы сияқты жеке деректерді ешқашан бермеңіз.']);
+  const hedge=/(мүмкін|шамамен|болуы ықтимал|нақты емес|білмеймін|может быть|примерно)/i.test(t);
+  if(hedge) out.push(['warn','?','ЖИ өзі сенімсіз','Жауапта «мүмкін», «шамамен» деген сөздер бар. Мұндай ақпаратты міндетті түрде тексеріңіз.']);
+  if(a.length>700) out.push(['warn','?','Жауап өте ұзын','Ұзын жауапта қате жасырынып қалуы оңай. Әр фактіні бөлек тексеріңіз.']);
+  if(!out.length) out.push(['ok','✓','Айқын ескерту белгісі табылмады','Бұл жауап дұрыс деген сөз емес. Бәрібір 3 адыммен тексеріңіз.']);
+  return out;
+}
+
+/* ---------- 3 steps ---------- */
+const STEPS=[
+  {t:'Оқулықпен салыстыру',d:'Мектеп оқулығы, энциклопедия немесе ресми сөздік',ph:'Мысалы: Әдебиет оқулығы, 8-сынып, 45-бет',short:'Оқулық'},
+  {t:'Мұғалімнен сұрау',d:'Мұғалімге немесе ата-анаға көрсетіп нақтылау',ph:'Мысалы: Әдебиет пәнінің мұғалімі',short:'Мұғалім'},
+  {t:'Ресми сайттан іздеу',d:'Ғылыми сайт немесе сенімді ақпарат көзі',ph:'Мысалы: ресми мемлекеттік немесе ғылыми сайт',short:'Ресми сайт'}
+];
+let state=STEPS.map(()=>({v:null,src:''})); let auto=null;
+function renderSteps(){
+  $('#steps').innerHTML=STEPS.map((s,i)=>`
+    <div class="step">
+      <div class="step-h"><span class="num">${i+1}</span><div><h3>${s.t}</h3><p class="hint">${s.d}</p></div></div>
+      <label class="f" for="src${i}">Қандай дереккөз қолдандыңыз?
+        <input type="text" id="src${i}" data-i="${i}" placeholder="${s.ph}" value="${esc(state[i].src)}"></label>
+      <div class="seg" data-i="${i}" role="group" aria-label="${s.t} нәтижесі">
+        <button data-v="match" aria-pressed="${state[i].v==='match'}">✓ Сәйкес келді</button>
+        <button data-v="nomatch" aria-pressed="${state[i].v==='nomatch'}">✗ Сәйкес келмеді</button>
+        <button data-v="skip" aria-pressed="${state[i].v==='skip'}">Тексерілмеді</button>
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('#steps .seg button').forEach(b=>b.onclick=()=>{
+    const i=+b.parentElement.dataset.i; state[i].v=b.dataset.v; renderSteps(); renderVerdict(true);
+  });
+  document.querySelectorAll('#steps input').forEach(inp=>inp.oninput=()=>{state[+inp.dataset.i].src=inp.value});
+}
+function verdict(){
+  const m=state.filter(s=>s.v==='match').length, n=state.filter(s=>s.v==='nomatch').length, done=state.filter(s=>s.v).length;
+  if(n>0) return {k:'bad',label:'Қате',text:`${n} дереккөз ЖИ жауабымен сәйкес келмеді. Бұл ақпаратты сабаққа немесе жобаға пайдалануға болмайды. Дұрыс нұсқасын дереккөзден алыңыз.`,score:Math.max(0,m*33-n*40)};
+  if(m>=1) return {k:'ok',label:'Дұрыс',text:`${m} дереккөз ЖИ жауабын растады. Ақпаратты пайдалануға болады, қолданған дереккөзді көрсетіңіз.`+(m<3?' Сенімділікті арттыру үшін тағы бір адымнан өтуге болады.':''),score:[0,60,80,100][m]};
+  if(auto) return {k:auto.k,label:auto.k==='ok'?'Дұрыс':'Қате',text:'Автоматты тексеру нәтижесі: '+auto.expl+' Оқулықпен немесе мұғаліммен растасаңыз, нәтиже сенімдірек болады.',score:auto.k==='ok'?50:40,byAuto:true};
+  return {k:'warn',label:'Тексер',text:done?'Ешбір дереккөз расталмады. Кемінде бір адымда «Сәйкес келді» немесе «Сәйкес келмеді» деп белгілеңіз.':'Жауапты дереккөзбен салыстырып, 3 адымның бірін белгілеңіз.',score:0};
+}
+function renderVerdict(pop){
+  const v=verdict(), st=$('#stamp');
+  st.className='stamp '+v.k+(pop?' pop':''); st.textContent=v.label;
+  $('#verdictText').textContent=v.text;
+  $('#meter').style.width=v.score+'%';
+  $('#meter').style.background=`var(--${v.k})`;
+  $('#meterText').textContent='Сенімділік деңгейі: '+v.score+'%';
+  $('#savedMsg').textContent='';
+  if(pop)say(v.k==='ok'?'Жарайсың! Жауап расталды. Журналға сақтауды ұмытпа.':v.k==='bad'?'Байқа! ЖИ қателесті. Дұрыс жауапты дереккөзден алайық.':'Тағы бір адымнан өтейік!');
+}
+$('#analyze').onclick=()=>{
+  const q=$('#q').value.trim(), a=$('#a').value.trim();
+  if(!q||!a){$('#flagsCard').hidden=false;$('#flags').innerHTML='<div class="flag bad"><span class="ic">!</span><div><b>Сұрақ пен жауапты толтырыңыз</b>Екі өріс те қажет.</div></div>';return;}
+  $('#flags').innerHTML=analyze(q,a).map(([k,ic,t,d])=>`<div class="flag ${k}"><span class="ic">${ic}</span><div><b>${esc(t)}</b>${esc(d)}</div></div>`).join('');
+  state=STEPS.map(()=>({v:null,src:''}));
+  auto=null;$('#autoOut').hidden=true;$('#autoStatus').textContent='';['#flagsCard','#stepsCard','#verdictCard'].forEach(s=>$(s).hidden=false);
+  getSampler().then(sm=>{$('#autoCard').hidden=!sm;});
+  renderSteps(); renderVerdict(false);
+  say('Сары белгілерге назар аудар! Енді жауапты оқулықпен, мұғаліммен немесе ресми сайтпен салыстыр.');
+  $('#flagsCard').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+};
+$('#clear').onclick=()=>{$('#q').value='';$('#a').value='';['#flagsCard','#autoCard','#stepsCard','#verdictCard'].forEach(s=>$(s).hidden=true);$('#q').focus();};
+
+/* ---------- auto check (Claude) ---------- */
+let samplerP=null;
+function getSampler(){ if(!samplerP) samplerP=(window.claude&&window.claude.use)?window.claude.use('sample').catch(()=>null):Promise.resolve(null); return samplerP; }
+async function autoCheck(q,a){
+  const sample=await getSampler();
+  if(!sample) throw {code:'unavailable'};
+  const prompt=`Сен мектеп оқушыларына арналған фактчекерсің. Төмендегі сұраққа ЖИ берген жауапты тексер.
+Сұрақ: ${q}
+ЖИ жауабы: ${a}
+
+Тек мына JSON форматта, қазақ тілінде жауап бер, басқа мәтін жазба:
+{"verdict":"correct" | "wrong" | "partial", "correct_answer":"дұрыс жауап бір-екі сөйлеммен", "explanation":"неге солай екенін 1-2 қысқа сөйлеммен түсіндір", "where_to_check":"оқушы қай жерден тексере алады (оқулық, энциклопедия, ресми сайт түрі)"}
+"partial" — жауаптың бір бөлігі дұрыс, бірақ қате немесе ескірген дерегі бар. Сенімің аз болса, мұны түсіндірмеде айт.`;
+  return sample.json(prompt,{modelTier:'default'});
+}
+const AV={correct:['ok','Дұрыс'],wrong:['bad','Қате'],partial:['bad','Толық емес']};
+$('#autoBtn').onclick=async()=>{
+  const q=$('#q').value.trim(), a=$('#a').value.trim(); if(!q||!a)return;
+  const b=$('#autoBtn'); b.disabled=true; $('#autoStatus').textContent='Тексеріліп жатыр… (5–30 секунд)';say('Қазір тексеріп жатырмын, сәл күте тұр...');
+  try{
+    const r=await autoCheck(q,a);
+    const [k,lab]=AV[r.verdict]||['bad','Толық емес'];
+    auto={k,expl:String(r.explanation||''),correct:String(r.correct_answer||'')};
+    $('#autoOut').hidden=false;
+    $('#autoOut').innerHTML=`<div class="flag ${k}"><span class="ic">${k==='ok'?'✓':'✗'}</span><div><b>${lab}</b>${esc(r.explanation||'')}</div></div>
+      <div class="qa"><span class="k">Дұрыс жауап</span><span>${esc(r.correct_answer||'')}</span></div>
+      <div class="qa"><span class="k">Қайдан тексеруге болады</span><span>${esc(r.where_to_check||'')}</span></div>`;
+    $('#autoStatus').textContent='';
+    renderVerdict(true);
+  }catch(e){
+    const c=e&&e.code;
+    $('#autoStatus').textContent=c==='not_granted'?'Автоматты тексеруге рұқсат берілмеді. 3 адымды қолмен белгілеңіз.'
+      :c==='rate_limited'?'Сұраныс тым көп. Бір минуттан кейін қайталаңыз.'
+      :c==='unavailable'?'Автоматты тексеру бұл жерде қолжетімсіз (Claude-қа кіру қажет). 3 адымды қолмен белгілеңіз.'
+      :'Тексеру сәтсіз болды. Қайта басып көріңіз немесе 3 адымды қолмен белгілеңіз.';
+  }finally{b.disabled=false;}
+};
+
+/* ---------- journal ---------- */
+const KEY='zhi-tekser-journal-v1';
+const SAMPLE=[
+  {q:'Әлемдегі ең үлкен жануар не?',a:'Көк кит',m:'Энциклопедия',v:'ok',sample:1},
+  {q:'Абай Құнанбайұлы қай жылы туған?',a:'1845 жыл',m:'Әдебиет оқулығы',v:'ok',sample:1},
+  {q:'Компьютердің негізгі құрылғылары қандай?',a:'Монитор, пернетақта, тінтуір, жүйелік блок',m:'Информатика оқулығы',v:'ok',sample:1},
+  {q:'Күрделі тарихи даталар мен логикалық есептер',a:'Жылдар мен есімдерді шатастырды',m:'Салыстырмалы талдау',v:'bad',sample:1}
+];
+let mem=null;
+function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}catch(e){} return mem||SAMPLE.slice();}
+function store(list){mem=list;try{localStorage.setItem(KEY,JSON.stringify(list))}catch(e){}}
+$('#save').onclick=()=>{
+  const v=verdict(), q=$('#q').value.trim(), a=$('#a').value.trim();
+  if(!q||!a)return;
+  const methods=state.map((s,i)=>s.v&&s.v!=='skip'?(s.src.trim()||STEPS[i].short):null).filter(Boolean);
+  const list=load(); list.push({q,a,m:methods.join('; ')||(v.byAuto?'Автоматты тексеру':'Тексерілмеді'),c:auto&&auto.correct||'',v:v.k,d:new Date().toISOString().slice(0,10)});
+  store(list);
+  $('#savedMsg').textContent='Журналға сақталды ('+list.length+'-жазба).';
+  say('Сақтадым! Нәтижені «Журнал» бөлімінен көре аласың.');
+};
+const VL={ok:'Дұрыс',bad:'Қате жіберді',warn:'Тексерілуде'};
+function renderJournal(){
+  const list=load();
+  $('#tbody').innerHTML=list.length?list.map((r,i)=>`<tr>
+    <td class="num-t">${i+1}</td><td>${esc(r.q)}${r.sample?'<span class="tag">мысал</span>':''}</td><td>${esc(r.a)}</td><td>${esc(r.m)}</td>
+    <td><button class="pill ${r.v}" data-p="${i}" style="border:0;cursor:pointer" title="Нәтижені өзгерту үшін басыңыз">${VL[r.v]} ▾</button></td>
+    <td><button class="x" data-i="${i}" aria-label="Жазбаны өшіру">×</button></td></tr>`).join('')
+    :'<tr><td colspan="6" class="hint">Журнал бос. «Жауапты тексеру» бөлімінде жауапты тексеріп, «Журналға сақтау» батырмасын басыңыз.</td></tr>';
+  document.querySelectorAll('#tbody [data-p]').forEach(b=>b.onclick=()=>{const l=load(),r=l[+b.dataset.p];r.v={warn:'ok',ok:'bad',bad:'warn'}[r.v];store(l);renderJournal();});
+  document.querySelectorAll('#tbody .x').forEach(b=>b.onclick=()=>{const l=load();l.splice(+b.dataset.i,1);store(l);renderJournal();});
+  const c={ok:0,bad:0,warn:0}; list.forEach(r=>c[r.v]++);
+  const tot=list.length, pct=k=>tot?Math.round(c[k]/tot*100):0;
+  $('#sOk').textContent=`${c.ok} · ${pct('ok')}%`;
+  $('#sBad').textContent=`${c.bad} · ${pct('bad')}%`;
+  $('#sWarn').textContent=`${c.warn} · ${pct('warn')}%`;
+  $('#sTotal').textContent=tot?`Барлығы ${tot} жауап тексерілді. Жобадағы негізгі тәжірибеде 20 жауаптың 16-сы (80%) дұрыс, 4-еуі (20%) қате немесе толық емес болды.`:'Әзірге жазба жоқ.';
+  const R=46,C=2*Math.PI*R; let off=0, segs='';
+  ['ok','bad','warn'].forEach(k=>{ if(!c[k])return; const len=c[k]/tot*C;
+    segs+=`<circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--${k})" stroke-width="18" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`; off+=len;});
+  $('#donut').innerHTML=`<circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--line)" stroke-width="18"/>${segs}
+    <text x="60" y="58" text-anchor="middle" fill="var(--ink)" style="font:700 22px var(--f-display)">${pct('ok')}%</text>
+    <text x="60" y="76" text-anchor="middle" fill="var(--muted)" style="font:500 10px var(--f-body)">дұрыс</text>`;
+}
+$('#clearAll').onclick=()=>{$('#confirmBox').hidden=false};
+$('#noClear').onclick=()=>{$('#confirmBox').hidden=true};
+$('#yesClear').onclick=()=>{store([]);$('#confirmBox').hidden=true;renderJournal();};
+$('#copyCsv').onclick=async()=>{
+  const list=load(), rows=[['№','ЖИ-ге берілген сұрақ','ЖИ жауабы','Тексеру әдісі','Нәтиже']].concat(list.map((r,i)=>[i+1,r.q,r.a,r.m,VL[r.v]]));
+  const txt=rows.map(r=>r.join('\t')).join('\n'), b=$('#copyCsv');
+  try{await navigator.clipboard.writeText(txt);b.textContent='Көшірілді';}catch(e){b.textContent='Көшіру мүмкін болмады';}
+  setTimeout(()=>b.textContent='Кестені көшіру',1800);
+};
+
+/* ---------- quiz ---------- */
+const QUIZ=[
+  {q:'Әлемдегі ең үлкен жануар қандай?',a:'Көк кит.',ok:1,e:'Дұрыс. Көк кит — Жердегі ең үлкен жануар. Тексеру: энциклопедия (1-адым).'},
+  {q:'Қазақстанның астанасы қай қала?',a:'Алматы.',ok:0,e:'Қате. Қазақстанның астанасы — Астана. Алматы 1997 жылға дейін астана болған. ЖИ ескірген ақпарат беруі мүмкін. Тексеру: ресми сайт (3-адым).'},
+  {q:'1 байтта неше бит бар?',a:'16 бит.',ok:0,e:'Қате. 1 байт = 8 бит. Тексеру: информатика оқулығы (1-адым).'},
+  {q:'Абай Құнанбайұлы қай жылы туған?',a:'1845 жылы.',ok:1,e:'Дұрыс. Абай 1845 жылы туған. Тексеру: әдебиет оқулығы (1-адым).'},
+  {q:'Тінтуір қандай құрылғыға жатады?',a:'Ақпаратты шығару құрылғысы.',ok:0,e:'Қате. Тінтуір — ақпаратты енгізу құрылғысы. Шығару құрылғыларына монитор мен принтер жатады. Тексеру: информатика оқулығы немесе мұғалім (1–2-адым).'},
+  {q:'Су қалыпты атмосфералық қысымда неше градуста қайнайды?',a:'100 °C.',ok:1,e:'Дұрыс. Қалыпты қысымда су 100 °C-та қайнайды. Тексеру: физика оқулығы (1-адым).'},
+  {q:'Python бағдарламалау тілін кім жасаған?',a:'Билл Гейтс.',ok:0,e:'Қате. Python тілін Гвидо ван Россум жасаған. ЖИ танымал есімдерді шатастыруы мүмкін. Тексеру: ресми сайт немесе мұғалім (2–3-адым).'},
+  {q:'Қазақстан тәуелсіздігін қашан жариялады?',a:'1991 жылы 16 желтоқсанда.',ok:1,e:'Дұрыс. Тексеру: Қазақстан тарихы оқулығы (1-адым).'},
+  {q:'Жер Күнді қанша уақытта бір рет айналып шығады?',a:'Шамамен 30 күнде.',ok:0,e:'Қате. Жер Күнді шамамен 365 күнде (бір жылда) айналып шығады. ЖИ мұны Айдың айналу уақытымен шатастырған. Тексеру: жаратылыстану оқулығы (1-адым).'},
+  {q:'«Қара сөздер» шығармасының авторы кім?',a:'Абай Құнанбайұлы.',ok:1,e:'Дұрыс. Тексеру: әдебиет оқулығы (1-адым).'}
+];
+let qi=0,score=0;
+function renderQ(){
+  const it=QUIZ[qi];
+  $('#qProg').textContent=`${qi+1} / ${QUIZ.length} · ұпай: ${score}`;
+  $('#qQ').textContent=it.q; $('#qA').textContent=it.a;
+  $('#qExp').hidden=true; $('#qNext').hidden=true;
+  document.querySelectorAll('#qChoice .btn').forEach(b=>b.disabled=false);
+}
+document.querySelectorAll('#qChoice .btn').forEach(b=>b.onclick=()=>{
+  const it=QUIZ[qi], right=(+b.dataset.ans)===it.ok;
+  if(right)score++;
+  document.querySelectorAll('#qChoice .btn').forEach(x=>x.disabled=true);
+  const ex=$('#qExp'); ex.hidden=false; ex.className='explain '+(right?'ok':'bad');
+  ex.innerHTML=`<b>${right?'Жарайсың!':'Байқа!'}</b> ${esc(it.e)}`;
+  say(right?'Жарайсың! Дұрыс таптың.':'Ештеңе етпейді! Түсіндірмені оқып ал.');
+  $('#qProg').textContent=`${qi+1} / ${QUIZ.length} · ұпай: ${score}`;
+  $('#qNext').hidden=false; $('#qNext').textContent=qi===QUIZ.length-1?'Нәтижені көру':'Келесі сұрақ';
+});
+$('#qNext').onclick=()=>{qi++; if(qi<QUIZ.length)renderQ(); else{
+  $('#quizCard').hidden=true;$('#quizEnd').hidden=false;
+  $('#qScore').textContent=`${score} / ${QUIZ.length}`;
+  $('#qMsg').textContent=score>=8?'Өте жақсы! Сен ЖИ қателерін жақсы байқайсың.':score>=5?'Жақсы! Бірақ кейбір қателер байқалмай қалды. Әрқашан 3 адыммен тексер.':'ЖИ жауабына бірден сенбе. Ережелер бөлімін қайта қарап шық.';
+}};
+$('#qRestart').onclick=()=>{qi=0;score=0;$('#quizEnd').hidden=true;$('#quizCard').hidden=false;renderQ();};
+renderQ();
+})();
+</script>
+
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
+</script>
+</body>
+</html>
